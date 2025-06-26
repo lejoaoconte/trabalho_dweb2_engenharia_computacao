@@ -9,20 +9,20 @@ $authHeader = function_exists('apache_request_headers')
 
 if (!preg_match('/Bearer\s(\S+)/', $authHeader, $matches)) {
     http_response_code(401);
-    echo json_encode(['error' => 'Token não enviado']);
+    echo json_encode(['erro' => 'Token não enviado']);
     exit;
 }
 $jwt = $matches[1];
 $tokenData = jwt_decode($jwt, JWT_SECRET);
 if (!$tokenData) {
     http_response_code(401);
-    echo json_encode(['error' => 'Token inválido ou expirado']);
+    echo json_encode(['erro' => 'Token inválido ou expirado']);
     exit;
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
-    echo json_encode(['error' => 'Método inválido']);
+    echo json_encode(['erro' => 'Método inválido']);
     exit;
 }
 
@@ -31,7 +31,7 @@ $matricula = $input['matricula'] ?? '';
 $idLivro   = $input['id_livro']   ?? '';
 if (!$matricula || !$idLivro) {
     http_response_code(400);
-    echo json_encode(['error' => 'Campos obrigatórios ausentes (matricula, id_livro)']);
+    echo json_encode(['erro' => 'Campos obrigatórios ausentes (matricula, id_livro)']);
     exit;
 }
 
@@ -40,7 +40,7 @@ $stmt->execute([$matricula]);
 $reader = $stmt->fetch(PDO::FETCH_ASSOC);
 if (!$reader) {
     http_response_code(404);
-    echo json_encode(['error' => 'Leitor não encontrado']);
+    echo json_encode(['erro' => 'Leitor não encontrado']);
     exit;
 }
 if ($reader['dataBloqueio']) {
@@ -48,7 +48,7 @@ if ($reader['dataBloqueio']) {
     $today     = new DateTime('today');
     if ($blockDate >= $today) {
         http_response_code(403);
-        echo json_encode(['error' => 'Leitor está bloqueado até ' . $blockDate->format('Y-m-d')]);
+        echo json_encode(['erro' => 'Leitor está bloqueado até ' . $blockDate->format('Y-m-d')]);
         exit;
     }
 }
@@ -57,10 +57,9 @@ $stmt = $pdo->prepare('SELECT id_reserva, fk_livro, fk_leitor FROM reservar WHER
 $stmt->execute([$idLivro]);
 $reservations = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-
 if (count($reservations) > 0 && $reservations[0]['fk_leitor'] !== $matricula) {
     http_response_code(403);
-    echo json_encode(['error' => 'Não é possível emprestar: você tem outras reservas ativas']);
+    echo json_encode(['erro' => 'Não é possível emprestar: você tem outras reservas ativas']);
     exit;
 }
 
@@ -75,8 +74,8 @@ if (count($reservations) > 0 && $reservations[0]['fk_leitor'] === $matricula) {
     }
 }
 
-$loanId = uniqid('loan_');
-$estimatedReturnDate = (new DateTime())->modify('+15 days')->format('Y-m-d');
+$emprestimoId = uniqid('emprestimo_');
+$dataRetornoEstimado = (new DateTime())->modify('+15 days')->format('Y-m-d');
 
 try {
     $ins = $pdo->prepare('
@@ -84,14 +83,14 @@ try {
           (id_emprestimo, fk_leitor, fk_livro, data, data_estimada_devolucao)
         VALUES (?, ?, ?, CURDATE(), ?)
     ');
-    $ins->execute([$loanId, $matricula, $idLivro, $estimatedReturnDate]);
+    $ins->execute([$emprestimoId, $matricula, $idLivro, $dataRetornoEstimado]);
 
     echo json_encode([
         'success'       => true,
-        'id_emprestimo'       => $loanId,
-        'data_estimada_devolucao'      => $estimatedReturnDate
+        'id_emprestimo'       => $emprestimoId,
+        'data_estimada_devolucao'      => $dataRetornoEstimado
     ]);
 } catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(['error' => 'Falha ao emprestar livro']);
+    echo json_encode(['erro' => 'Falha ao emprestar livro']);
 }

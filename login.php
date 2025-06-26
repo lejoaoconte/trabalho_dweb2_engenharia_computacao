@@ -5,7 +5,7 @@ require 'auth.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
-    echo json_encode(['error' => 'Método inválido']);
+    echo json_encode(['erro' => 'Método inválido']);
     exit;
 }
 
@@ -15,7 +15,7 @@ $password = $input['password'] ?? '';
 
 if (!$email || !$password) {
     http_response_code(400);
-    echo json_encode(['error' => 'E-mail e senha são obrigatórios']);
+    echo json_encode(['erro' => 'E-mail e senha são obrigatórios']);
     exit;
 }
 
@@ -26,7 +26,7 @@ $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$user) {
     http_response_code(401);
-    echo json_encode(['error' => 'Credenciais inválidas']);
+    echo json_encode(['erro' => 'Credenciais inválidas']);
     exit;
 }
 

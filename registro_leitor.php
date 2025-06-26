@@ -9,20 +9,21 @@ $authHeader = function_exists('apache_request_headers')
 
 if (!preg_match('/Bearer\s(\S+)/', $authHeader, $matches)) {
     http_response_code(401);
-    echo json_encode(['error' => 'Token não enviado']);
+    echo json_encode(['erro' => 'Token não enviado']);
     exit;
 }
+
 $jwt = $matches[1];
 $tokenData = jwt_decode($jwt, JWT_SECRET);
 if (!$tokenData) {
     http_response_code(401);
-    echo json_encode(['error' => 'Token inválido ou expirado']);
+    echo json_encode(['erro' => 'Token inválido ou expirado']);
     exit;
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
-    echo json_encode(['error' => 'Método inválido']);
+    echo json_encode(['erro' => 'Método inválido']);
     exit;
 }
 
@@ -36,7 +37,7 @@ $cpf         = $data['cpf']          ?? '';
 
 if (!$matricula || !$curso || !$nome || !$afiliacao || !$cpf) {
     http_response_code(400);
-    echo json_encode(['error' => 'Campos obrigatórios ausentes (matricula, curso, nome, afiliacao, cpf)']);
+    echo json_encode(['erro' => 'Campos obrigatórios ausentes (matricula, curso, nome, afiliacao, cpf)']);
     exit;
 }
 
@@ -46,5 +47,5 @@ try {
     echo json_encode(['successo' => true, 'matricula' => $matricula]);
 } catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(['error' => 'Falha ao registrar leitor']);
+    echo json_encode(['erro' => 'Falha ao registrar leitor']);
 }

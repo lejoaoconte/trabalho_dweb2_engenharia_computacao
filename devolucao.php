@@ -9,28 +9,28 @@ $authHeader = function_exists('apache_request_headers')
 
 if (!preg_match('/Bearer\s(\S+)/', $authHeader, $matches)) {
     http_response_code(401);
-    echo json_encode(['error' => 'Token não enviado']);
+    echo json_encode(['erro' => 'Token não enviado']);
     exit;
 }
 $jwt = $matches[1];
 $tokenData = jwt_decode($jwt, JWT_SECRET);
 if (!$tokenData) {
     http_response_code(401);
-    echo json_encode(['error' => 'Token inválido ou expirado']);
+    echo json_encode(['erro' => 'Token inválido ou expirado']);
     exit;
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
-    echo json_encode(['error' => 'Método inválido']);
+    echo json_encode(['erro' => 'Método inválido']);
     exit;
 }
 
 $input = json_decode(file_get_contents('php://input'), true);
-$loanId = $input['loan_id'] ?? '';
-if (!$loanId) {
+$emprestimoId = $input['emprestimo_id'] ?? '';
+if (!$emprestimoId) {
     http_response_code(400);
-    echo json_encode(['error' => 'Campo obrigatório ausente (loan_id)']);
+    echo json_encode(['erro' => 'Campo obrigatório ausente (emprestimo_id)']);
     exit;
 }
 
@@ -39,25 +39,25 @@ $stmt = $pdo->prepare('
       FROM pegar_emprestado
      WHERE id_emprestimo = ?
 ');
-$stmt->execute([$loanId]);
+$stmt->execute([$emprestimoId]);
 $loan = $stmt->fetch(PDO::FETCH_ASSOC);
 if (!$loan) {
     http_response_code(404);
-    echo json_encode(['error' => 'Empréstimo não encontrado']);
+    echo json_encode(['erro' => 'Empréstimo não encontrado']);
     exit;
 }
 if ($loan['data_devolucao'] !== null) {
     http_response_code(400);
-    echo json_encode(['error' => 'Este livro já foi devolvido']);
+    echo json_encode(['erro' => 'Este livro já foi devolvido']);
     exit;
 }
 
 $today    = new DateTime('today');
-$dueDate  = new DateTime($loan['data_estimada_devolucao']);
-$overdueDays = 0;
-if ($today > $dueDate) {
-    $interval    = $dueDate->diff($today);
-    $overdueDays = $interval->days;
+$dataEstimadaDevolucao  = new DateTime($loan['data_estimada_devolucao']);
+$diasPassadosDataDevolucao = 0;
+if ($today > $dataEstimadaDevolucao) {
+    $interval    = $dataEstimadaDevolucao->diff($today);
+    $diasPassadosDataDevolucao = $interval->days;
 }
 
 $upd = $pdo->prepare('
@@ -65,10 +65,10 @@ $upd = $pdo->prepare('
        SET data_devolucao = CURDATE()
      WHERE id_emprestimo = ?
 ');
-$upd->execute([$loanId]);
+$upd->execute([$emprestimoId]);
 
-$newBlockDate = null;
-if ($overdueDays > 0) {
+$novaDataBloqueio = null;
+if ($diasPassadosDataDevolucao > 0) {
     $chk = $pdo->prepare('SELECT dataBloqueio FROM leitor WHERE matricula = ?');
     $chk->execute([$loan['fk_leitor']]);
     $reader = $chk->fetch(PDO::FETCH_ASSOC);
@@ -81,20 +81,20 @@ if ($overdueDays > 0) {
         }
     }
 
-    $baseDate->modify('+' . $overdueDays . ' days');
-    $newBlockDate = $baseDate->format('Y-m-d');
+    $baseDate->modify('+' . $diasPassadosDataDevolucao . ' days');
+    $novaDataBloqueio = $baseDate->format('Y-m-d');
 
     $updBlk = $pdo->prepare('
         UPDATE leitor
            SET dataBloqueio = ?
          WHERE matricula = ?
     ');
-    $updBlk->execute([$newBlockDate, $loan['fk_leitor']]);
+    $updBlk->execute([$novaDataBloqueio, $loan['fk_leitor']]);
 }
 
 echo json_encode([
     'successo'       => true,
-    'id_emprestimo'       => $loanId,
-    'data_devolucao'  => $overdueDays,
-    'bloqueado_ate_data'   => $newBlockDate 
+    'id_emprestimo'       => $emprestimoId,
+    'data_devolucao'  => $diasPassadosDataDevolucao,
+    'bloqueado_ate_data'   => $novaDataBloqueio 
 ]);

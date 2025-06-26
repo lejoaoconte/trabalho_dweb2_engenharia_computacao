@@ -8,20 +8,20 @@ $authHeader = function_exists('apache_request_headers')
 
 if (!preg_match('/Bearer\s(\S+)/', $authHeader, $matches)) {
     http_response_code(401);
-    echo json_encode(['error' => 'Token não enviado']);
+    echo json_encode(['erro' => 'Token não enviado']);
     exit;
 }
 $jwt = $matches[1];
 $tokenData = jwt_decode($jwt, JWT_SECRET);
 if (!$tokenData) {
     http_response_code(401);
-    echo json_encode(['error' => 'Token inválido ou expirado']);
+    echo json_encode(['erro' => 'Token inválido ou expirado']);
     exit;
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
-    echo json_encode(['error' => 'Método inválido']);
+    echo json_encode(['erro' => 'Método inválido']);
     exit;
 }
 
@@ -34,16 +34,16 @@ $status    = isset($data['status']) ? (int)$data['status'] : 1;
 
 if (!$isbn || !$titulo || !$autor || !$categoria) {
     http_response_code(400);
-    echo json_encode(['error' => 'Campos obrigatórios ausentes (isbn, titulo, autor, categoria)']);
+    echo json_encode(['erro' => 'Campos obrigatórios ausentes (isbn, titulo, autor, categoria)']);
     exit;
 }
 
-$bookId = uniqid('book_');
+$idLivro = uniqid('book_');
 $stmt = $pdo->prepare('INSERT INTO livro (id_livro, isbn, titulo, autor, categoria, status) VALUES (?, ?, ?, ?, ?, ?)');
 try {
-    $stmt->execute([$bookId, $isbn, $titulo, $autor, $categoria, $status]);
-    echo json_encode(['successo' => true, 'id_livro' => $bookId]);
+    $stmt->execute([$idLivro, $isbn, $titulo, $autor, $categoria, $status]);
+    echo json_encode(['successo' => true, 'id_livro' => $idLivro]);
 } catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(['error' => 'Falha ao registrar livro']);
+    echo json_encode(['erro' => 'Falha ao registrar livro']);
 }

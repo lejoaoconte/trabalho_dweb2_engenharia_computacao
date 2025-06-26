@@ -9,12 +9,12 @@ $authHeader = function_exists('apache_request_headers')
 
 if (!preg_match('/Bearer\s(\S+)/', $authHeader, $m)) {
     http_response_code(401);
-    echo json_encode(['error' => 'Token não enviado']);
+    echo json_encode(['erro' => 'Token não enviado']);
     exit;
 }
 if (!jwt_decode($m[1], JWT_SECRET)) {
     http_response_code(401);
-    echo json_encode(['error' => 'Token inválido ou expirado']);
+    echo json_encode(['erro' => 'Token inválido ou expirado']);
     exit;
 }
 

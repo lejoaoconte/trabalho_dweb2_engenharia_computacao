@@ -15,7 +15,7 @@ try {
     );
 } catch (PDOException $e) {
     http_response_code(500);
-    echo json_encode(['error' => 'Database connection failed']);
+    echo json_encode(['erro' => 'Database connection failed']);
     exit;
 }
 ?>

@@ -9,20 +9,20 @@ $authHeader = function_exists('apache_request_headers')
 
 if (!preg_match('/Bearer\s(\S+)/', $authHeader, $matches)) {
     http_response_code(401);
-    echo json_encode(['error' => 'Token não enviado']);
+    echo json_encode(['erro' => 'Token não enviado']);
     exit;
 }
 $jwt = $matches[1];
 $tokenData = jwt_decode($jwt, JWT_SECRET);
 if (!$tokenData) {
     http_response_code(401);
-    echo json_encode(['error' => 'Token inválido ou expirado']);
+    echo json_encode(['erro' => 'Token inválido ou expirado']);
     exit;
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
-    echo json_encode(['error' => 'Método inválido']);
+    echo json_encode(['erro' => 'Método inválido']);
     exit;
 }
 
@@ -32,17 +32,17 @@ $idLivro    = $data['id_livro']   ?? '';
 
 if (!$matricula || !$idLivro) {
     http_response_code(400);
-    echo json_encode(['error' => 'Campos obrigatórios ausentes (matricula, id_livro)']);
+    echo json_encode(['erro' => 'Campos obrigatórios ausentes (matricula, id_livro)']);
     exit;
 }
 
-$reservationId = uniqid('res_');
+$idReserva = uniqid('res_');
 $stmt = $pdo->prepare('INSERT INTO reservar (id_reserva, fk_leitor, fk_livro, data) VALUES (?, ?, ?, CURDATE())');
-
+//TODO - Verificar se o livro já está reservado
 try {
-    $stmt->execute([$reservationId, $matricula, $idLivro]);
-    echo json_encode(['sucesso' => true, 'id_reserva' => $reservationId]);
+    $stmt->execute([$idReserva, $matricula, $idLivro]);
+    echo json_encode(['sucesso' => true, 'id_reserva' => $idReserva]);
 } catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(['error' => 'Falha ao reservar livro']);
+    echo json_encode(['erro' => 'Falha ao reservar livro']);
 }

@@ -9,14 +9,13 @@ $authHeader = function_exists('apache_request_headers')
 
 if (!preg_match('/Bearer\s(\S+)/', $authHeader, $m)) {
     http_response_code(401);
-    echo json_encode(['error'=>'Token not provided']); exit;
+    echo json_encode(['erro'=>'Token not provided']); exit;
 }
 if (!jwt_decode($m[1], JWT_SECRET)) {
     http_response_code(401);
-    echo json_encode(['error'=>'Invalid or expired token']); exit;
+    echo json_encode(['erro'=>'Invalid or expired token']); exit;
 }
 
-// --- Build filters ---
 $matricula = $_GET['matricula']   ?? '';
 $reader    = $_GET['nome']        ?? '';
 $bookId    = $_GET['id_livro']    ?? '';
