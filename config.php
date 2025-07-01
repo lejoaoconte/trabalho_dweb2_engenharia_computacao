@@ -1,19 +1,23 @@
 <?php
-define('DB_HOST', '127.0.0.1');
-define('DB_NAME', 'biblioteca');
-define('DB_USER', 'zelead');
-define('DB_PASS', 'password');
+// Definição das constantes de configuração do banco de dados MySQL
+define('DB_HOST', '127.0.0.1'); // Endereço do servidor MySQL
+define('DB_NAME', 'biblioteca'); // Nome do banco de dados
+define('DB_USER', 'zelead');     // Usuário do banco de dados
+define('DB_PASS', 'password');   // Senha do banco de dados
 
+// Define a chave secreta usada para assinar e validar tokens JWT
 define('JWT_SECRET', 'your_super_secret_key');
 
 try {
+    // Cria uma conexão PDO (PHP Data Objects) com o banco de dados MySQL
     $pdo = new PDO(
         'mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=utf8mb4',
         DB_USER,
         DB_PASS,
-        [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
+        [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION] // Ativa exceções para erros SQL
     );
 } catch (PDOException $e) {
+    // Em caso de erro na conexão, retorna erro 500 e mensagem em JSON para o cliente
     http_response_code(500);
     echo json_encode(['erro' => 'Database connection failed']);
     exit;
