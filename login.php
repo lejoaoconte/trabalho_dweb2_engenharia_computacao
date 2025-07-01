@@ -11,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 // Lê e decodifica os dados JSON enviados na requisição
-$input = json_decode(file_get_contents('php:// input'), true);
+$input = json_decode(file_get_contents('php://input'), true);
 $email = $input['email'] ?? '';
 $password = $input['password'] ?? '';
 

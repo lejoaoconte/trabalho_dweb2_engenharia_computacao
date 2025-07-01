@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 // Lê o corpo da requisição (espera-se um JSON)
-$input = json_decode(file_get_contents('php:// input'), true);
+$input = json_decode(file_get_contents('php://input'), true);
 $matricula = $input['matricula'] ?? '';
 $idLivro   = $input['id_livro']   ?? '';
 // Verifica se os campos obrigatórios foram informados
@@ -62,6 +62,17 @@ if ($reader['dataBloqueio']) {
         exit;
     }
 }
+
+// Verifica se o livro está emprestado
+$stmt = $pdo->prepare('SELECT * FROM pegar_emprestado WHERE fk_livro = ? AND data_devolucao IS NULL');
+$stmt->execute([$idLivro]);
+$loan = $stmt->fetch(PDO::FETCH_ASSOC);
+if ($loan) {
+    http_response_code(403);
+    echo json_encode(['erro' => 'Livro já emprestado']);
+    exit;
+}
+
 
 // Verifica se o livro está reservado para outro leitor
 $stmt = $pdo->prepare('SELECT id_reserva, fk_livro, fk_leitor FROM reservar WHERE fk_livro = ?');

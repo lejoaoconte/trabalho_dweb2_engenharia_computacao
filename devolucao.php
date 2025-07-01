@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 // Lê o corpo da requisição (espera-se um JSON)
-$input = json_decode(file_get_contents('php:// input'), true);
+$input = json_decode(file_get_contents('php://input'), true);
 $emprestimoId = $input['emprestimo_id'] ?? '';
 // Verifica se o ID do empréstimo foi informado
 if (!$emprestimoId) {

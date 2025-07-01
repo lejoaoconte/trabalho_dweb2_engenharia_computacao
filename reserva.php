@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 // Extrai os campos esperados da requisição
-$data      = json_decode(file_get_contents('php:// input'), true);
+$data      = json_decode(file_get_contents('php://input'), true);
 $matricula  = $data['matricula'] ?? '';
 $idLivro    = $data['id_livro']   ?? '';
 
