@@ -1,4 +1,14 @@
 <?php
+header("Access-Control-Allow-Origin: http://localhost:3000");
+header("Access-Control-Allow-Methods: POST, GET, OPTIONS, DELETE, PUT");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
+
+// O navegador envia uma requisição OPTIONS primeiro para verificar a permissão (preflight request)
+// Se for uma requisição OPTIONS, apenas retorne os cabeçalhos e saia.
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    exit(0);
+}
+
 // Definição das constantes de configuração do banco de dados MySQL
 define('DB_HOST', '127.0.0.1'); // Endereço do servidor MySQL
 define('DB_NAME', 'biblioteca'); // Nome do banco de dados

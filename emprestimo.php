@@ -63,6 +63,19 @@ if ($reader['dataBloqueio']) {
     }
 }
 
+//Verifica se o leitor já possui empréstimos com devolução pendente passado dos dias previstos
+$stmt = $pdo->prepare('
+    SELECT COUNT(*) as total FROM pegar_emprestado 
+    WHERE fk_leitor = ? AND data_devolucao IS NULL AND data_estimada_devolucao < CURDATE()
+');
+$stmt->execute([$matricula]);
+$overdueLoans = $stmt->fetchColumn();
+if ($overdueLoans > 0) {
+    http_response_code(403);
+    echo json_encode(['erro' => 'Leitor possui empréstimos pendentes']);
+    exit;
+}
+
 // Verifica se o livro está emprestado
 $stmt = $pdo->prepare('SELECT * FROM pegar_emprestado WHERE fk_livro = ? AND data_devolucao IS NULL');
 $stmt->execute([$idLivro]);
